@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/chatApp/bin/Debug/netcoreapp3.1
+/chatApp/obj/Debug/netcoreapp3.1
+/chatApp/obj
+/chatApp/wwwroot/js/signalr/dist
+/.vs/chatApp/DesignTimeBuild
+/.vs/chatApp/v16
