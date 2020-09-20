@@ -1,7 +1,11 @@
 ﻿"use strict";
 
 var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-
+var selecteduserName;
+var currentUser;
+var isDeleted = false;
+var connectionSender;
+var connectionReceiver;
 //Disable send button until connection is established
 document.getElementById("sendButton").disabled = true;
 
@@ -11,12 +15,60 @@ connection.on("ReceiveLog", function (data) {
     return console.log("LOG", data);
 });
 
-connection.on("ReceiveMessage", function (user, message) {
+connection.on("ReceiveMessage", function (messageReceiver, messageSender, message, timestamp, isDeleted,messageId) {
+    var sentDate = new Date(timestamp).toString()
+    var index = sentDate.lastIndexOf(':') + 3
+    var DeliveredTime = sentDate.substring(0, index); 
+
+    if (isDeleted) {
+        //remove message from recervers side  
+        //update local storage as well 
+        var retrievedObject = localStorage.getItem(messageId);
+
+        console.log("This message will be removed ", messageId, message);
+    }
+    else
+    {
+        var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        var encodedMsg = messageSender + " says " + msg + "<br />" + "At" + DeliveredTime;
+        var li = document.createElement("li");
+        li.textContent = encodedMsg;
+        document.getElementById("messagesList").appendChild(li);
+    }
+    console.log("Receiver:", messageReceiver);
+    console.log("MESSAGE", encodedMsg);
+});
+
+connection.on("MessageSent", function (messageId, timestamp, message, messageReceiver) {
+
+    var key = messageId;
+    //convert time --2020-09-18T14:55:44.3721628+05:30 to readable format
+    var sentDate = new Date(timestamp).toString()
+    var index = sentDate.lastIndexOf(':') + 3
+    var messageSentTime = sentDate.substring(0, index);
+
+
+    var messageContent = {
+        MessageId: messageId,
+        Content: message,
+        DeliveredTime: messageSentTime
+    };
+
+
+
+    var value = JSON.stringify(messageContent);
+    localStorage.setItem(key, value);
+
     var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    var encodedMsg = user + " says " + msg;
+    var messagetime = new Date(timestamp);
+    var encodedMsg = " You says " + messageContent.Content + "<br />"+"At" + messageContent.DeliveredTime;
     var li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
+
+   
+    //var retrievedObject = localStorage.getItem(`Chat_${messageSender}_${messageReceiver}`);
+    console.log('storedObject: ', JSON.parse(messageContent));
 });
 
 connection.start().then(function () {
@@ -27,12 +79,19 @@ connection.start().then(function () {
 });
 
 document.getElementById("sendButton").addEventListener("click", function (event) {
-    var user = document.getElementById("userInput").value;
+
+    var messageReceiver = document.getElementById("selectedUsername").value;
     var message = document.getElementById("messageInput").value;
-    connection.invoke("SendMessage", user, message).catch(function (err) {
+    isDeleted = false;
+    var Id = "";
+    // var messageId =
+    // generate unique name for the chat between two users -- 
+    // to store in a way that you can know the key you stored on the localstorage exactly..
+    // sort the user names alph 
+
+    connection.invoke("SendMessage", messageReceiver, connection.userName, message, Id, isDeleted).catch(function (err) {
         return console.error(err.toString());
     });
-    event.preventDefault();
 });
 
 
@@ -41,3 +100,132 @@ Window.callLog = () =>
         .catch(function (err) {
             return console.error("LOG", err.toString());
         });
+
+function RegisterUser() {
+    var userName = document.getElementById("userName").value;
+    connection.userName = userName;
+    connection.invoke("UserRegister", userName).catch(function (error)
+    {
+        return console.error(error.toString());
+    });
+    event.preventDefault();
+    console.log("Registered User"+currentUser);
+};
+
+function GetOnlineUsers() {
+    connection.invoke("GetOnlineUsers", connection.connectionId).catch(function (error) {
+        return console.error(error.toString());
+    });
+    connection.on("GetAllUsers", function (data) {
+        var str = '<ul>'
+        data.forEach(function (item) {
+            str += '<li>' + item.userName + '</li>';
+            console.log("All online Users:" + item.userName);
+
+        });
+        str += '</ul>';
+        document.getElementById("onlineUsers").innerHTML = str;
+        return console.log("LOG", data);
+    });
+}
+
+function DeleteMessage(key) {
+    //get id from selected message
+    var retrievedObject = localStorage.getItem(key);
+
+    var messageReceiver = document.getElementById("selectedUsername").value;
+    var tempObject = JSON.parse(retrievedObject);
+    delete retrievedObject.Content;
+    var message = "";
+    var Id = key;
+    localStorage.setItem(key, retrievedObject);
+    isDeleted = true;
+    connection.invoke("SendMessage", messageReceiver, connection.userName, message,Id, isDeleted).catch(function (err) {
+        return console.error(err.toString());
+    });
+   
+
+}
+
+
+
+
+
+//JS to new chat
+
+const messageFrom = get(".msger-inputarea");
+const messageInput = get(".msger-input");
+const msgerChat = get(".msger-chat");
+
+const BOT_MSGS = [
+    "Hi, how are you?",
+    "Ohh... I can't understand what you trying to say. Sorry!",
+    "I like to play games... But I don't know how to play!",
+    "Sorry if my answers are not relevant. :))",
+    "I feel sleepy! :("
+];
+
+// Icons made by Freepik from www.flaticon.com
+const BOT_IMG = "https://image.flaticon.com/icons/svg/327/327779.svg";
+const PERSON_IMG = "https://image.flaticon.com/icons/svg/145/145867.svg";
+const BOT_NAME = "BOT";
+const PERSON_NAME = "Sajad";
+
+msgerForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const msgText = msgerInput.value;
+    if (!msgText) return;
+
+    appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
+    msgerInput.value = "";
+
+    botResponse();
+});
+
+function appendMessage(name, img, side, text) {
+    //   Simple solution for small apps
+    const msgHTML = `
+    <div class="msg ${side}-msg">
+      <div class="msg-img" style="background-image: url(${img})"></div>
+
+      <div class="msg-bubble">
+        <div class="msg-info">
+          <div class="msg-info-name">${name}</div>
+          <div class="msg-info-time">${formatDate(new Date())}</div>
+        </div>
+
+        <div class="msg-text">${text}</div>
+      </div>
+    </div>
+  `;
+
+    msgerChat.insertAdjacentHTML("beforeend", msgHTML);
+    msgerChat.scrollTop += 500;
+}
+
+function botResponse() {
+    const r = random(0, BOT_MSGS.length - 1);
+    const msgText = BOT_MSGS[r];
+    const delay = msgText.split(" ").length * 100;
+
+    setTimeout(() => {
+        appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
+    }, delay);
+}
+
+// Utils
+function get(selector, root = document) {
+    return root.querySelector(selector);
+}
+
+function formatDate(date) {
+    const h = "0" + date.getHours();
+    const m = "0" + date.getMinutes();
+
+    return `${h.slice(-2)}:${m.slice(-2)}`;
+}
+
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
