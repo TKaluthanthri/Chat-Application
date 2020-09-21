@@ -466,6 +466,13 @@ img {
     }
 }
 
+#closebtn {
+    display: block;
+    float: right;
+    width: 30px;
+    height: 29px;
+    background: url(https://web.archive.org/web/20110126035650/http://digitalsbykobke.com/images/close.png) no-repeat center center;
+}
 @keyframes slideFromRight {
     0% {
         margin-right: -200px;

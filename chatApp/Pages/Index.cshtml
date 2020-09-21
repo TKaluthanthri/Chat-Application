@@ -9,30 +9,31 @@
 <link href="~/css/CustomStyles.css" rel="stylesheet" />
 <link href="~/css/Chatstyles.css" rel="stylesheet" />
 
+<!--Old html code start-->
 
-<div class="container">
+    <section class="msger">
 
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-2">User Display Name</div>
-        <div class="col-4"><input type="text" id="userName" /></div>
-    </div>
-
-    <div class="row">
-        <div class="col-6">
-            <button onclick="RegisterUser()">Register User</button>
-            <br />
-            <button onclick="GetOnlineUsers()"> Get All connected users</button>
-            <br />
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-2">User Display Name</div>
+            <div class="col-4"><input type="text" id="userName" /></div>
         </div>
-    </div>
 
-    <div id="onlineUsers" class="onlineUsers"></div>
-    <div class="row">
-        <div>
-            <div class="col-4"><input type="text" id="selectedUsername" /></div>
+        <div class="row">
+            <div class="col-6">
+                <button onclick="RegisterUser()">Register User</button>
+                <br />
+                <button onclick="GetOnlineUsers()"> Get All connected users</button>
+                <br />
+            </div>
         </div>
-    </div>
+
+        <div id="onlineUsers" class="onlineUsers"></div>
+        <div class="row">
+            <div>
+                <div class="col-4"><input type="text" id="selectedUsername" /></div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-2">Message</div>
             <div class="col-4"><input type="text" id="messageInput" /></div>
@@ -43,70 +44,46 @@
                 <input type="button" id="sendButton" value="Send Message" />
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <hr />
+        <div class="row">
+            <div class="col-12">
+                <hr />
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
+        <div class="row">
+            <div class="col-6">
+                <ul id="messagesList"></ul>
+            </div>
         </div>
-    </div>
+        </section>
+<!--Old html code end-->
+
 
 <!--starting new chat UI-->
-    <section class="msger">
-        <header class="msger-header">
-            <div class="msger-header-title">
-                <i class="fas fa-comment-alt"></i> SimpleChat
-            </div>
-            <div class="msger-header-options">
-                <span><i class="fas fa-cog"></i></span>
-            </div>
-        </header>
+<section class="msger">
+    <header class="msger-header">
+        <div class="msger-header-title">
+            <i class="fas fa-comment-alt"></i> SimpleChat
+        </div>
+        <div class="msger-header-options">
+            <span><i class="fas fa-cog"></i></span>
+        </div>
+    </header>
 
-        <main class="msger-chat">
-            <div class="msg left-msg">
-                <div class="msg-img"
-                     style="background-image: url(https://image.flaticon.com/icons/svg/327/327779.svg)"></div>
+    <main class="msger-chat">
+        <div class="msg left-msg">
+        </div>
 
-                <div class="msg-bubble">
-                    <div class="msg-info">
-                        <div class="msg-info-name">BOT</div>
-                        <div class="msg-info-time">12:45</div>
-                    </div>
+        <div class="msg right-msg">
+        </div>
+    </main>
 
-                    <div class="msg-text">
-                        Hi, welcome to SimpleChat! Go ahead and send me a message. 😄
-                    </div>
-                </div>
-            </div>
-
-            <div class="msg right-msg">
-                <div class="msg-img"
-                     style="background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)"></div>
-
-                <div class="msg-bubble">
-                    <div class="msg-info">
-                        <div class="msg-info-name">Sajad</div>
-                        <div class="msg-info-time">12:46</div>
-                    </div>
-
-                    <div class="msg-text">
-                        You can change your name in JS section!
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <form class="msger-inputarea">
-            <input type="text" class="msger-input" placeholder="Enter your message...">
-            <button type="submit" class="msger-send-btn">Send</button>
-        </form>
-    </section>
+    <form class="msger-inputarea">
+        <input type="text" class="msger-input" placeholder="Enter your message...">
+        <button type="submit" class="msger-send-btn">Send</button>
+    </form>
+</section>
 <!--Ending new chat UI-->
 
 
-    <script src="~/js/signalr/dist/browser/signalr.js"></script>
-    <script src="~/js/chat.js"></script>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>

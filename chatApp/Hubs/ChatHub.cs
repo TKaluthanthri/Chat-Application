@@ -11,22 +11,51 @@ namespace chatApp.Hubs
 {
     public class ChatHub: Hub
     {
-        private Dictionary<string, string> mapConnToUser = new Dictionary<string, string>();
-        private Dictionary<string, string> mapUser = new Dictionary<string, string>();
+        static HashSet<User> CurrentConnections = new HashSet<User>();
 
+        public override Task OnConnectedAsync()
+        {
+            return base.OnConnectedAsync();
+        }
         public async Task Log()
         {
-           
             var list = new List<string>();
             list.Add(Context.ConnectionId);
             await Clients.Caller.SendAsync("ReceiveLog", list);
         }
 
-        public async Task SendMessage(string user, string message)
+        public async Task SendMessage(string messageReceiver, string messageSender, string message, string Id, bool isDeleted)
         {
-            Console.WriteLine(Context.User.Identity.Name);
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            var selectedUser = CurrentConnections.Where(x => x.UserName == messageReceiver).First();
+            DateTime timestamp = DateTime.Now;
+
+
+            if (String.IsNullOrEmpty(Id))
+            {
+                string messageId = Guid.NewGuid().ToString("N");
+                await Clients.Caller.SendAsync("MessageSent", messageId, timestamp, message, messageReceiver);
+            }
+
+            await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, isDeleted, Id);
+
         }
+
+        public async Task UserRegister(string userName)
+        {
+            User user = new User();
+            user.ConnectionId = Context.ConnectionId;
+            user.UserName = userName;
+            CurrentConnections.Add(user);
+        }
+
+        public async Task GetOnlineUsers(string connectionId) {
+
+            var onlineUsers = CurrentConnections.Where(x => x.ConnectionId != connectionId).ToList();
+            var currentuser = Context.ConnectionId;
+            await Clients.Client(connectionId).SendAsync("GetAllUsers", onlineUsers);
+        }
+
+        
 
     }
 }

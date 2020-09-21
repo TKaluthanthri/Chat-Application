@@ -6,6 +6,13 @@ var currentUser;
 var isDeleted = false;
 var connectionSender;
 var connectionReceiver;
+
+const messageFrom = get(".msger-inputarea");
+const messageInput = get(".msger-input");
+const msgerChat = get(".msger-chat");
+const BOT_IMG = "https://image.flaticon.com/icons/svg/145/145866.svg";
+const PERSON_IMG = "https://image.flaticon.com/icons/svg/145/145867.svg";
+
 //Disable send button until connection is established
 document.getElementById("sendButton").disabled = true;
 
@@ -29,11 +36,13 @@ connection.on("ReceiveMessage", function (messageReceiver, messageSender, messag
     }
     else
     {
-        var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        var encodedMsg = messageSender + " says " + msg + "<br />" + "At" + DeliveredTime;
-        var li = document.createElement("li");
-        li.textContent = encodedMsg;
-        document.getElementById("messagesList").appendChild(li);
+        appendMessage(messageSender, BOT_IMG, "right", message, messageId);
+
+        //var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        //var encodedMsg = messageSender + " says " + msg + "<br />" + "At" + DeliveredTime;
+        //var li = document.createElement("li");
+        //li.textContent = encodedMsg;
+        //document.getElementById("messagesList").appendChild(li);
     }
     console.log("Receiver:", messageReceiver);
     console.log("MESSAGE", encodedMsg);
@@ -59,14 +68,14 @@ connection.on("MessageSent", function (messageId, timestamp, message, messageRec
     var value = JSON.stringify(messageContent);
     localStorage.setItem(key, value);
 
-    var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    var messagetime = new Date(timestamp);
-    var encodedMsg = " You says " + messageContent.Content + "<br />"+"At" + messageContent.DeliveredTime;
-    var li = document.createElement("li");
-    li.textContent = encodedMsg;
-    document.getElementById("messagesList").appendChild(li);
-
-   
+    appendMessage(connection.userName, PERSON_IMG, "left", message, messageId);
+    messageInput.value = "";
+    //var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    //var messagetime = new Date(timestamp);
+    //var encodedMsg = " You says " + messageContent.Content + "<br />"+"At" + messageContent.DeliveredTime;
+    //var li = document.createElement("li");
+    //li.textContent = encodedMsg;
+    //document.getElementById("messagesList").appendChild(li);
     //var retrievedObject = localStorage.getItem(`Chat_${messageSender}_${messageReceiver}`);
     console.log('storedObject: ', JSON.parse(messageContent));
 });
@@ -78,21 +87,39 @@ connection.start().then(function () {
     return console.error(err.toString());
 });
 
-document.getElementById("sendButton").addEventListener("click", function (event) {
+messageFrom.addEventListener("submit", event => {
+    event.preventDefault();
 
     var messageReceiver = document.getElementById("selectedUsername").value;
-    var message = document.getElementById("messageInput").value;
+    const message = messageInput.value;
+
+   // const message = document.getElementById("messageInput").value;
     isDeleted = false;
     var Id = "";
-    // var messageId =
-    // generate unique name for the chat between two users -- 
-    // to store in a way that you can know the key you stored on the localstorage exactly..
-    // sort the user names alph 
+
+    if (!message) return;
 
     connection.invoke("SendMessage", messageReceiver, connection.userName, message, Id, isDeleted).catch(function (err) {
         return console.error(err.toString());
     });
+  
 });
+
+//document.getElementById("sendButton").addEventListener("click", function (event) {
+
+//    var messageReceiver = document.getElementById("selectedUsername").value;
+//    var message = document.getElementById("messageInput").value;
+//    isDeleted = false;
+//    var Id = "";
+//    // var messageId =
+//    // generate unique name for the chat between two users -- 
+//    // to store in a way that you can know the key you stored on the localstorage exactly..
+//    // sort the user names alph 
+
+//    connection.invoke("SendMessage", messageReceiver, connection.userName, message, Id, isDeleted).catch(function (err) {
+//        return console.error(err.toString());
+//    });
+//});
 
 
 Window.callLog = () => 
@@ -153,45 +180,33 @@ function DeleteMessage(key) {
 
 //JS to new chat
 
-const messageFrom = get(".msger-inputarea");
-const messageInput = get(".msger-input");
-const msgerChat = get(".msger-chat");
 
-const BOT_MSGS = [
-    "Hi, how are you?",
-    "Ohh... I can't understand what you trying to say. Sorry!",
-    "I like to play games... But I don't know how to play!",
-    "Sorry if my answers are not relevant. :))",
-    "I feel sleepy! :("
-];
 
-// Icons made by Freepik from www.flaticon.com
-const BOT_IMG = "https://image.flaticon.com/icons/svg/327/327779.svg";
-const PERSON_IMG = "https://image.flaticon.com/icons/svg/145/145867.svg";
-const BOT_NAME = "BOT";
-const PERSON_NAME = "Sajad";
 
-msgerForm.addEventListener("submit", event => {
-    event.preventDefault();
 
-    const msgText = msgerInput.value;
-    if (!msgText) return;
+//messageFrom.addEventListener("submit", event => {
+//    event.preventDefault();
 
-    appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
-    msgerInput.value = "";
+//    const msgText = msgerInput.value;
+//    if (!msgText) return;
 
-    botResponse();
-});
+//    appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
+//    msgerInput.value = "";
 
-function appendMessage(name, img, side, text) {
-    //   Simple solution for small apps
+//    botResponse();
+//});
+
+function appendMessage(name, img, side, text,id) {
+    //   Append the message for chat
     const msgHTML = `
     <div class="msg ${side}-msg">
       <div class="msg-img" style="background-image: url(${img})"></div>
 
       <div class="msg-bubble">
+        <a id="closebtn" onclick='DeleteMessage(${id})' href="#"></a>
         <div class="msg-info">
-          <div class="msg-info-name">${name}</div>
+
+          <div class="msg-info-name" id=${id}>${name}</div>
           <div class="msg-info-time">${formatDate(new Date())}</div>
         </div>
 
@@ -204,15 +219,7 @@ function appendMessage(name, img, side, text) {
     msgerChat.scrollTop += 500;
 }
 
-function botResponse() {
-    const r = random(0, BOT_MSGS.length - 1);
-    const msgText = BOT_MSGS[r];
-    const delay = msgText.split(" ").length * 100;
 
-    setTimeout(() => {
-        appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
-    }, delay);
-}
 
 // Utils
 function get(selector, root = document) {
