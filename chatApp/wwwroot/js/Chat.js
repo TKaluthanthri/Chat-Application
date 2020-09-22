@@ -31,7 +31,8 @@ connection.on("ReceiveMessage", function (messageReceiver, messageSender, messag
         //remove message from recervers side  
         //update local storage as well 
         var retrievedObject = localStorage.getItem(messageId);
-
+        var tempObject = JSON.parse(retrievedObject);
+        //need to find element and remove message from there 
         console.log("This message will be removed ", messageId, message);
     }
     else
@@ -156,18 +157,18 @@ function GetOnlineUsers() {
     });
 }
 
-function DeleteMessage(key) {
+function DeleteMessage(event) {
     //get id from selected message
-    var retrievedObject = localStorage.getItem(key);
+    var retrievedObject = localStorage.getItem(event.id);
 
     var messageReceiver = document.getElementById("selectedUsername").value;
     var tempObject = JSON.parse(retrievedObject);
-    delete retrievedObject.Content;
-    var message = "";
-    var Id = key;
-    localStorage.setItem(key, retrievedObject);
+    delete tempObject.Content;
+    event.innerHTML = "You deleted this message!!!";
+  
+    localStorage.setItem(event.id, retrievedObject);
     isDeleted = true;
-    connection.invoke("SendMessage", messageReceiver, connection.userName, message,Id, isDeleted).catch(function (err) {
+    connection.invoke("SendMessage", messageReceiver, connection.userName, "", event.id, isDeleted).catch(function (err) {
         return console.error(err.toString());
     });
    
@@ -203,17 +204,16 @@ function appendMessage(name, img, side, text,id) {
       <div class="msg-img" style="background-image: url(${img})"></div>
 
       <div class="msg-bubble">
-        <a id="closebtn" onclick='DeleteMessage(${id})' href="#"></a>
+        <a class="msger-close-btn" onclick='DeleteMessage(${id})' href="#"></a>
         <div class="msg-info">
-
-          <div class="msg-info-name" id=${id}>${name}</div>
-          <div class="msg-info-time">${formatDate(new Date())}</div>
+            <div class="msg-info-row">
+                <div class="msg-info-name">${name}</div>
+                <div class="msg-info-time">${formatDate(new Date())}</div>
+            </div>
+            <div class="msg-text" id=${id}>${text}</div>
         </div>
-
-        <div class="msg-text">${text}</div>
       </div>
-    </div>
-  `;
+    </div>`;
 
     msgerChat.insertAdjacentHTML("beforeend", msgHTML);
     msgerChat.scrollTop += 500;

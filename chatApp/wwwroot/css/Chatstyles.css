@@ -95,11 +95,16 @@ body {
     border-radius: 15px;
     background: var(--left-msg-bg);
 }
-
+.msger-close-btn {
+    display: block;
+    float: right;
+    width: 30px;
+    height: 29px;
+    background: url(https://web.archive.org/web/20110126035650/http://digitalsbykobke.com/images/close.png) no-repeat center center;
+}
 .msg-info {
-    display: flex;
+    display: inline-block;
     justify-content: space-between;
-    align-items: center;
     margin-bottom: 10px;
 }
 
@@ -112,6 +117,11 @@ body {
     font-size: 0.85em;
 }
 
+.msg-info-row {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+}
 .left-msg .msg-bubble {
     border-bottom-left-radius: 0;
 }
@@ -148,7 +158,6 @@ body {
     flex: 1;
     background: #ddd;
 }
-
 .msger-send-btn {
     margin-left: 10px;
     background: rgb(0, 196, 65);
