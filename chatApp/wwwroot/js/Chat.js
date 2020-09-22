@@ -26,24 +26,24 @@ connection.on("ReceiveMessage", function (messageReceiver, messageSender, messag
     var sentDate = new Date(timestamp).toString()
     var index = sentDate.lastIndexOf(':') + 3
     var DeliveredTime = sentDate.substring(0, index); 
-
-    if (isDeleted) {
+   
+    if (!isDeleted) {
+        appendMessage(messageSender, BOT_IMG, "right", message, messageId);
+    }
+    else
+    {
         //remove message from recervers side  
         //update local storage as well 
         var retrievedObject = localStorage.getItem(messageId);
         var tempObject = JSON.parse(retrievedObject);
-        //need to find element and remove message from there 
-        console.log("This message will be removed ", messageId, message);
-    }
-    else
-    {
-        appendMessage(messageSender, BOT_IMG, "right", message, messageId);
-
-        //var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        //var encodedMsg = messageSender + " says " + msg + "<br />" + "At" + DeliveredTime;
-        //var li = document.createElement("li");
-        //li.textContent = encodedMsg;
-        //document.getElementById("messagesList").appendChild(li);
+        var list = document.getElementsByClassName("msg-text");
+        for (var item of list)
+        {
+            if (item.id == messageId) {
+                item.innerText = "this message was deleted by user";
+                break;
+            }   
+        }
     }
     console.log("Receiver:", messageReceiver);
     console.log("MESSAGE", encodedMsg);
@@ -64,19 +64,12 @@ connection.on("MessageSent", function (messageId, timestamp, message, messageRec
         DeliveredTime: messageSentTime
     };
 
-
-
     var value = JSON.stringify(messageContent);
     localStorage.setItem(key, value);
 
     appendMessage(connection.userName, PERSON_IMG, "left", message, messageId);
     messageInput.value = "";
-    //var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    //var messagetime = new Date(timestamp);
-    //var encodedMsg = " You says " + messageContent.Content + "<br />"+"At" + messageContent.DeliveredTime;
-    //var li = document.createElement("li");
-    //li.textContent = encodedMsg;
-    //document.getElementById("messagesList").appendChild(li);
+
     //var retrievedObject = localStorage.getItem(`Chat_${messageSender}_${messageReceiver}`);
     console.log('storedObject: ', JSON.parse(messageContent));
 });
@@ -106,21 +99,6 @@ messageFrom.addEventListener("submit", event => {
   
 });
 
-//document.getElementById("sendButton").addEventListener("click", function (event) {
-
-//    var messageReceiver = document.getElementById("selectedUsername").value;
-//    var message = document.getElementById("messageInput").value;
-//    isDeleted = false;
-//    var Id = "";
-//    // var messageId =
-//    // generate unique name for the chat between two users -- 
-//    // to store in a way that you can know the key you stored on the localstorage exactly..
-//    // sort the user names alph 
-
-//    connection.invoke("SendMessage", messageReceiver, connection.userName, message, Id, isDeleted).catch(function (err) {
-//        return console.error(err.toString());
-//    });
-//});
 
 
 Window.callLog = () => 
@@ -172,30 +150,7 @@ function DeleteMessage(event) {
         return console.error(err.toString());
     });
    
-
 }
-
-
-
-
-
-//JS to new chat
-
-
-
-
-
-//messageFrom.addEventListener("submit", event => {
-//    event.preventDefault();
-
-//    const msgText = msgerInput.value;
-//    if (!msgText) return;
-
-//    appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
-//    msgerInput.value = "";
-
-//    botResponse();
-//});
 
 function appendMessage(name, img, side, text,id) {
     //   Append the message for chat
@@ -220,7 +175,6 @@ function appendMessage(name, img, side, text,id) {
 }
 
 
-
 // Utils
 function get(selector, root = document) {
     return root.querySelector(selector);
@@ -233,6 +187,5 @@ function formatDate(date) {
     return `${h.slice(-2)}:${m.slice(-2)}`;
 }
 
-function random(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-}
+
+

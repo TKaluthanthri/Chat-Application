@@ -28,15 +28,19 @@ namespace chatApp.Hubs
         {
             var selectedUser = CurrentConnections.Where(x => x.UserName == messageReceiver).First();
             DateTime timestamp = DateTime.Now;
-
+            string messageId = string.Empty;
 
             if (String.IsNullOrEmpty(Id))
             {
-                string messageId = Guid.NewGuid().ToString("N");
+                messageId = Guid.NewGuid().ToString("N");
                 await Clients.Caller.SendAsync("MessageSent", messageId, timestamp, message, messageReceiver);
-            }
+                await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, false, messageId);
 
-            await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, isDeleted, Id);
+            }
+            else
+            {
+                await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, isDeleted, Id);
+            }
 
         }
 
