@@ -6,58 +6,28 @@
 }
 <link href="~/css/CustomStyles.css" rel="stylesheet" />
 <link href="~/css/Chatstyles.css" rel="stylesheet" />
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-
 
 <!--Old html code start-->
 
 <section class="msger">
+    <div class="onlineUsers">
+        <h2>Online Users</h2>
+        
 
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-2">User Display Name</div>
-        <div class="col-4"><input type="text" id="userName" /></div>
-    </div>
+        <!--<ul class="userlist">-->
+            @*<li class="item"><img src="https://image.flaticon.com/icons/svg/145/145866.svg" alt="Avatar" class="avatar"> Adele</li>
 
-    <div class="row">
-        <div class="col-6">
-            <button onclick="RegisterUser()">Register User</button>
-            <br />
-            <button onclick="GetOnlineUsers()"> Get All connected users</button>
-            <br />
-        </div>
-    </div>
+            <li class="item"><img src="https://image.flaticon.com/icons/svg/145/145889.svg" alt="Avatar" class="avatar">TestUser</li>*@
 
-    <div id="onlineUsers" class="onlineUsers"></div>
-    <div class="row">
-        <div>
-            <div class="col-4"><input type="text" id="selectedUsername" /></div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-2">Message</div>
-        <div class="col-4"><input type="text" id="messageInput" /></div>
-    </div>
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-6">
-            <input type="button" id="sendButton" value="Send Message" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <hr />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
-        </div>
+        <!--</ul>-->
     </div>
 </section>
 <!--Old html code end-->
 <!--starting new chat UI-->
 <section class="msger">
+    <div class="ChatPerson">
+        <h3>You have selected the user :</h3><div class="chatuser"></div>
+    </div>
     <header class="msger-header">
         <div class="msger-header-title">
             <i class="fas fa-comment-alt"></i> SimpleChat
@@ -81,6 +51,31 @@
     </form>
 </section>
 <!--Ending new chat UI-->
+<!--Modal initial load start-->
+<!-- The Modal -->
+<!-- Modal content -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div id="modal-content" class="modal-content">
+        <span class="close">&times;</span>
+        <p><h2>Please Register your preffered User Display Name </h2></p>
+        <input type="text" id="userDisplayName" placeholder="User Name" />
+        <input type="text" placeholder="User Display Name" />
+
+        <button type="submit" class="userSave" id="Savemodaluser">Save</button>
+
+
+    </div>
+
+</div>
+
+<!--Modal end-->
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/chat.js"></script>
+
+
+
+
+<!----new modal-->

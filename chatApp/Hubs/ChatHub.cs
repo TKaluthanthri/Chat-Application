@@ -9,57 +9,39 @@ using System.Threading.Tasks;
 
 namespace chatApp.Hubs
 {
-    public class ChatHub: Hub
+    public class ChatHub : Hub
     {
-        static HashSet<User> CurrentConnections = new HashSet<User>();
+        static Dictionary<string, string> Connections = new Dictionary<string, string>();
 
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();
         }
-        public async Task Log()
+        
+        public async Task SendMessage(string messageReceiver, string messageSender, string message)
         {
-            var list = new List<string>();
-            list.Add(Context.ConnectionId);
-            await Clients.Caller.SendAsync("ReceiveLog", list);
-        }
+            var ConnectionId = Connections.GetValueOrDefault(messageReceiver, "");
 
-        public async Task SendMessage(string messageReceiver, string messageSender, string message, string Id, bool isDeleted)
-        {
-            var selectedUser = CurrentConnections.Where(x => x.UserName == messageReceiver).First();
             DateTime timestamp = DateTime.Now;
-            string messageId = string.Empty;
+            string messageId = Guid.NewGuid().ToString("N");
 
-            if (String.IsNullOrEmpty(Id))
-            {
-                messageId = Guid.NewGuid().ToString("N");
-                await Clients.Caller.SendAsync("MessageSent", messageId, timestamp, message, messageReceiver);
-                await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, false, messageId);
-
-            }
-            else
-            {
-                await Clients.Client(selectedUser.ConnectionId).SendAsync("ReceiveMessage", messageReceiver, messageSender, message, timestamp, isDeleted, Id);
-            }
+            await Clients.Caller.SendAsync("MessageSent", messageId, timestamp, message, messageReceiver);
+            await Clients.Client(ConnectionId).SendAsync("ReceiveMessage", messageId, timestamp, message, messageSender);
 
         }
 
         public async Task UserRegister(string userName)
         {
-            User user = new User();
-            user.ConnectionId = Context.ConnectionId;
-            user.UserName = userName;
-            CurrentConnections.Add(user);
+            Connections.Add(userName, Context.ConnectionId);
+            var onlineUsers = Connections.Select(x => x.Key).ToList();
+            await Clients.All.SendAsync("GetAllUsers", onlineUsers);
         }
 
-        public async Task GetOnlineUsers(string connectionId) {
-
-            var onlineUsers = CurrentConnections.Where(x => x.ConnectionId != connectionId).ToList();
-            var currentuser = Context.ConnectionId;
-            await Clients.Client(connectionId).SendAsync("GetAllUsers", onlineUsers);
+        public async Task RemoveMessage(string messageSender, string messageId)
+        {
+            await Clients.Client(Context.ConnectionId).SendAsync("DeleteMessage", messageId, messageSender);
         }
 
-        
 
     }
 }
