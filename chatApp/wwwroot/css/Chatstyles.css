@@ -42,12 +42,15 @@ body {
 }
 
 .msger-header {
-    display: flex;
+    display: inline-flex;
     justify-content: space-between;
     padding: 10px;
     border-bottom: var(--border);
     background: #eee;
     color: #666;
+    margin-left: 10px;
+    font-size: large;
+    font-weight: bold;
 }
 
 .msger-chat {

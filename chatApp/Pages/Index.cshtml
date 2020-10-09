@@ -11,26 +11,17 @@
 
 <section class="msger">
     <div class="onlineUsers">
+        <h1>Logged User: <span id="currentUser"></span></h1>
         <h2>Online Users</h2>
-        
-
-        <!--<ul class="userlist">-->
-            @*<li class="item"><img src="https://image.flaticon.com/icons/svg/145/145866.svg" alt="Avatar" class="avatar"> Adele</li>
-
-            <li class="item"><img src="https://image.flaticon.com/icons/svg/145/145889.svg" alt="Avatar" class="avatar">TestUser</li>*@
-
-        <!--</ul>-->
     </div>
 </section>
 <!--Old html code end-->
 <!--starting new chat UI-->
 <section class="msger">
-    <div class="ChatPerson">
-        <h3>You have selected the user :</h3><div class="chatuser"></div>
-    </div>
+
     <header class="msger-header">
         <div class="msger-header-title">
-            <i class="fas fa-comment-alt"></i> SimpleChat
+            <i class="fas fa-comment-alt"></i> <h3>Chat with :</h3><div id="chatuser"></div>
         </div>
         <div class="msger-header-options">
             <span><i class="fas fa-cog"></i></span>
@@ -38,44 +29,26 @@
     </header>
 
     <main class="msger-chat">
-        <div class="msg left-msg">
-        </div>
-
-        <div class="msg right-msg">
-        </div>
+        <div class="msg left-msg"></div>
+        <div class="msg right-msg"></div>
     </main>
 
     <form class="msger-inputarea">
         <input type="text" class="msger-input" placeholder="Enter your message...">
         <button type="submit" class="msger-send-btn">Send</button>
     </form>
-</section>
-<!--Ending new chat UI-->
-<!--Modal initial load start-->
-<!-- The Modal -->
-<!-- Modal content -->
-<div id="myModal" class="modal">
 
-    <!-- Modal content -->
+</section>
+
+<!-- Modal content start -->
+<div id="myModal" class="modal">
     <div id="modal-content" class="modal-content">
         <span class="close">&times;</span>
         <p><h2>Please Register your preffered User Display Name </h2></p>
-        <input type="text" id="userDisplayName" placeholder="User Name" />
-        <input type="text" placeholder="User Display Name" />
-
+        <input type="text" id="userDisplayName" placeholder="User Name" autocomplete="off" />
         <button type="submit" class="userSave" id="Savemodaluser">Save</button>
-
-
     </div>
-
 </div>
-
-<!--Modal end-->
-
+<!--Modal content end-->
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/chat.js"></script>
-
-
-
-
-<!----new modal-->

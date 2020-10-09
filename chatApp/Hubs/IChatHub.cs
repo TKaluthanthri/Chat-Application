@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace chatApp.Hubs
 {
-    public interface IWebSocket
+    public interface IChatHub
     {
-        public void SendAll(string msg);
+
     }
 }

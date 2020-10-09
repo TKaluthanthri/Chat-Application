@@ -2,7 +2,6 @@
 
 const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 let selecteduserName;
-let selectedlistItem;
 
 const deletedMessage = "this message was deleted";
 
@@ -16,7 +15,7 @@ const PERSON_IMG = "https://image.flaticon.com/icons/svg/145/145867.svg";
 
 const modalCloseBtn = document.getElementsByClassName("close")[0];
 const modalSaveBtn = document.getElementsByClassName("userSave")[0];
-let myModal = document.getElementById("myModal");
+const myModal = document.getElementById("myModal");
 
 function toggleVisibility(element, IsShow) {
     if (IsShow) {
@@ -32,28 +31,20 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
 modalCloseBtn.onclick = function () {
-   
+
     toggleVisibility(myModal, false);
-    GetOnlineUsers();
 }
 
 modalSaveBtn.onclick = function () {
     currentConnectedUser = document.getElementById("userDisplayName").value.trim();
+    document.getElementById("currentUser").innerText = currentConnectedUser
     RegisterUser();
     toggleVisibility(myModal, false);
 }
 
-//var $selectedUser = $('.item').click(function (e) {
-//    e.preventDefault();
-//   // $thumbs.removeClass(classHighlight);
-//    $(this).addClass("highlight");
-//});
-//Disable send button until connection is established
-//document.getElementById("sendButton").disabled = true;
-
 connection.on("ReceiveMessage", function (messageId, timestamp, message, messageSender) {
 
-    AddNewMessage(messageId, timestamp, message, "right", messageSender);
+    AddNewMessage(messageId, timestamp, message, "left", messageSender);
 
 });
 
@@ -71,10 +62,9 @@ function CreateMessage(messageId, timestamp, message, side) {
     };
 }
 
-
 connection.on("MessageSent", function (messageId, timestamp, message, messageReceiver) {
 
-    AddNewMessage(messageId, timestamp, message, "left", messageReceiver);
+    AddNewMessage(messageId, timestamp, message, "right", messageReceiver);
 
     // console.log('storedObject: ', JSON.parse(messageObject));
 });
@@ -95,8 +85,6 @@ function RegisterUser() {
     });
     event.preventDefault();
     console.log("Registered User : " + currentConnectedUser);
-
-    GetOnlineUsers();
 };
 
 connection.on("GetAllUsers", function (data) {
@@ -104,10 +92,10 @@ connection.on("GetAllUsers", function (data) {
     data
         .filter(item => item != currentConnectedUser)
         .forEach(function (item) {
+            const classes = selecteduserName == item ? "highlight" : undefined;
+            element += CreateListUsers(item, classes);
 
-        element += CreateListUsers(item);
-
-    });
+        });
     element += '</ul>';
 
     const userListDiv = get('.onlineUsers');
@@ -122,31 +110,34 @@ connection.on("GetAllUsers", function (data) {
 
     userListDiv.insertAdjacentHTML("beforeend", element);
     userListDiv.scrollTop += 500;
+
 });
 
-function GetOnlineUsers() {
-    
-}
-
-function CreateListUsers(item) {
-    return '<li class="item" onclick="SelectedUser(this)"><img src="https://image.flaticon.com/icons/svg/145/145866.svg" alt="Avatar" class="avatar"> ' + item + '</li>';
+function CreateListUsers(item, classes = "") {
+    return '<li id="' + item + '_item" class="item ' + classes + '" onclick="SelectedUser(this)"><img src="https://image.flaticon.com/icons/svg/145/145866.svg" alt="Avatar" class="avatar"/>' + item + '<span id="' + item + '_dot" class="dot" style="display:none; float:right; margin-top:10px;">0</span></li>';
 }
 
 function SelectedUser(element) {
-    console.log(element.textContent.trim());
 
-    selecteduserName = element.textContent.trim();
-    
-    
-    if ((selectedlistItem != undefined) && (selectedlistItem.classList.contains("highlight"))) {
-      selectedlistItem.classList.remove("highlight");
+    msgerChat.innerHTML = "";
+    const newSelectedUser = element.childNodes[1].textContent.trim();
+
+    if (selecteduserName == newSelectedUser) {
+        return;
     }
-    selectedlistItem = element;
-    selectedlistItem.classList.add("highlight");
-    document.getElementsByClassName('chatuser')[0].innerText = selecteduserName;
+
+    if (selecteduserName != undefined) {
+        const highlightedElement = document.getElementById(selecteduserName + "_item");
+        highlightedElement.classList.remove("highlight");
+    }
+
+    selecteduserName = newSelectedUser;
+    element.classList.add("highlight");
+
+    document.getElementById('chatuser').innerText = selecteduserName;
+    clearBadge(selecteduserName);
 
     LoadHistoryMessages();
-    
 }
 
 messageFrom.addEventListener("submit", event => {
@@ -159,45 +150,43 @@ messageFrom.addEventListener("submit", event => {
     connection.invoke("SendMessage", selecteduserName, currentConnectedUser, message).catch(function (err) {
         return console.error(err.toString());
     });
-  
+
+    messageInput.value = "";
+
 });
 
 
-function DeleteMessage(event) {
+function DeleteMessage(id) {
 
-    const storageKey = `${currentConnectedUser}_${selecteduserName}`;
-    const item = localStorage.getItem(storageKey);
-    let messageObject = item != null ? JSON.parse(item) : {};
+    const messageObject = getMessagesObject(selecteduserName);
 
+    messageObject[id].Content = deletedMessage;
 
-    messageObject[event.id].Content = deletedMessage;
+    saveMessagesObject(selecteduserName, messageObject);
 
-    localStorage.setItem(storageKey, JSON.stringify(messageObject));
-
-    const deletedItem = document.getElementById(event.id);
+    const deletedItem = document.getElementById(id);
     deletedItem.innerText = deletedMessage;
-    
 
-    connection.invoke("RemoveMessage", currentConnectedUser, event.id).catch(function (err) {
+
+    connection.invoke("RemoveMessage", selecteduserName, currentConnectedUser, id).catch(function (err) {
         return console.error(err.toString());
     });
-   
+
 }
 
 connection.on("DeleteMessage", function (messageId, messageSender) {
 
-    const storageKey = `${currentConnectedUser}_${messageSender}`;
-    const item = localStorage.getItem(storageKey);
-    let messageObject = item != null ? JSON.parse(item) : {};
+    const messageObject = getMessagesObject(messageSender);
 
-    
-    messageObject[messageId].Content = deletedMessage;
-    localStorage.setItem(storageKey, JSON.stringify(messageObject));
+    if (messageId in messageObject) {
 
-    if (messageSender == selecteduserName) {
+        messageObject[messageId].Content = deletedMessage;
+        saveMessagesObject(messageSender, messageObject);
 
-        const deletedItem = document.getElementById(messageId);
-        deletedItem.innerText = deletedMessage;
+        if (selecteduserName != undefined && messageSender == selecteduserName) {
+            const deletedItem = document.getElementById(messageId);
+            deletedItem.innerText = deletedMessage;
+        }
     }
 
 });
@@ -205,20 +194,20 @@ connection.on("DeleteMessage", function (messageId, messageSender) {
 
 
 
-function appendMessage(name, img, side, text,id) {
+function appendMessage(name, img, side, text, id) {
     //   Append the message for chat
     const msgHTML = `
     <div class="msg ${side}-msg">
-      <div class="msg-img" style="background-image: url(${img})"></div>
+      <div class="msg-img" style="background-image: url('${img}')"></div>
 
       <div class="msg-bubble">
-        <a class="msger-close-btn" onclick='DeleteMessage(${id})' href="#"></a>
+        <a class="msger-close-btn" onclick='DeleteMessage("${id}")' href="#"></a>
         <div class="msg-info">
             <div class="msg-info-row">
                 <div class="msg-info-name">${name}</div>
                 <div class="msg-info-time">${formatDate(new Date())}</div>
             </div>
-            <div class="msg-text" id=${id}>${text}</div>
+            <div class="msg-text" id="${id}">${text}</div>
         </div>
       </div>
     </div>`;
@@ -241,41 +230,60 @@ function formatDate(date) {
 }
 
 function AddNewMessage(messageId, timestamp, message, sideParam, messageReceiver) {
-    const storageKey = `${currentConnectedUser}_${messageReceiver}`;
-    const item = localStorage.getItem(storageKey);
-    let messageObject = item != null ? JSON.parse(item) : {};
+
+    const messageObject = getMessagesObject(messageReceiver);
 
     messageObject[messageId] = CreateMessage(messageId, timestamp, message, sideParam);
 
-    localStorage.setItem(storageKey, JSON.stringify(messageObject));
+    saveMessagesObject(messageReceiver, messageObject);
 
     if (selecteduserName != undefined && messageReceiver == selecteduserName) {
         appendMessage(currentConnectedUser, PERSON_IMG, sideParam, message, messageId);
+    } else {
+        if (sideParam == "left") {
+            addBadge(messageReceiver);
+        }
     }
 
 }
 
 function LoadHistoryMessages() {
 
-    const storageKey = `${currentConnectedUser}_${selecteduserName}`;
-    const item = localStorage.getItem(storageKey);
-    let messageObject = item != null ? JSON.parse(item) : {};
+    const messageObject = getMessagesObject(selecteduserName);
 
     Object.values(messageObject).forEach(function ({
         MessageId: messageId,
         Content: message,
         Messageside: sideParam
     }) {
-
-        appendMessage(currentConnectedUser, PERSON_IMG, sideParam, message, messageId);
-
+        const user = sideParam != "left" ? currentConnectedUser : selecteduserName;
+        appendMessage(user, PERSON_IMG, sideParam, message, messageId);
     });
-
-  
 
 }
 
+function getMessagesObject(remoteUser) {
+    const storageKey = `${currentConnectedUser}_${remoteUser}`;
+    const item = localStorage.getItem(storageKey);
+    return item != null ? JSON.parse(item) : {};
+}
+
+function saveMessagesObject(remoteUser, messageObject) {
+    const storageKey = `${currentConnectedUser}_${remoteUser}`;
+    localStorage.setItem(storageKey, JSON.stringify(messageObject));
+}
 
 
+function addBadge(item) {
+    const badgeItem = document.getElementById(item + "_dot");
+    let count = parseInt(badgeItem.innerText);
+    badgeItem.innerText = count + 1;
+    badgeItem.style.display = "block";
+}
 
+function clearBadge(item) {
+    const badgeItem = document.getElementById(item + "_dot");
+    badgeItem.innerText = 0;
+    badgeItem.style.display = "none";
+}
 
