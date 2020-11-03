@@ -1,4 +1,4 @@
-# Chat Application
+# Chat Application Use Case
 initial commit 2020-19-10
 > ##  User needs to retrieve lists of users from server.
 *  User should contain following properties 
